@@ -55,3 +55,10 @@ python database/seed.py
 - **WhatsApp ordering**: The checkout flow ends with a `wa.me` deep link pre-filled with the order summary, customer name, and address. No order is "confirmed" until the WhatsApp message is sent.
 - **Async DB**: All database calls use `aiosqlite` — use `async def` route handlers and `await` all DB operations.
 - **Mobile-first CSS**: Write base styles for mobile, then use `@media (min-width: ...)` for larger screens. Avoid desktop-first patterns.
+
+## Session Log
+
+| # | Name | Summary | Status | Date |
+|---|------|---------|--------|------|
+| 1 | db-and-models | database/db.py, seed.py, models/product.py, models/order.py | ✅ Done | 2026-06-28 |
+| 2 | product-listing | main.py, products router, home page UI | ✅ Done | 2026-06-28 |
