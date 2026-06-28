@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}DRIP — Men's Clothing{% endblock %}
+
+{% block content %}
+<div class="product-grid">
+  {% for product in products %}
+  <a href="/product/{{ product.id }}" class="card">
+    <div class="card__img-wrap">
+      <img
+        src="/static/uploads/{{ product.image }}"
+        alt="{{ product.name }}"
+        class="card__img"
+      >
+    </div>
+    <div class="card__body">
+      <p class="card__name">{{ product.name }}</p>
+      <p class="card__price">₹{{ (product.price / 100) | int }}</p>
+      <button class="btn btn--primary">Buy Now</button>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}
