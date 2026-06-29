@@ -62,3 +62,4 @@ python database/seed.py
 |---|------|---------|--------|------|
 | 1 | db-and-models | database/db.py, seed.py, models/product.py, models/order.py | ✅ Done | 2026-06-28 |
 | 2 | product-listing | main.py, products router, home page UI | ✅ Done | 2026-06-28 |
+| 3 | product-detail | product page, size selector, WhatsApp button | ✅ Done | 2026-06-29 |
