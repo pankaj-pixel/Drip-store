@@ -49,6 +49,8 @@
       <button class="qty-btn" id="qty-inc" aria-label="Increase">+</button>
     </div>
 
+    <button class="btn btn--primary" id="cart-btn">Add to Cart</button>
+
     <button class="btn btn--whatsapp" id="whatsapp-btn">
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
            fill="currentColor">
@@ -78,7 +80,9 @@
 
 <script>
   const PHONE = "918826662645";
+  const PRODUCT_ID = {{ product.id }};
   const PRODUCT_NAME = {{ product.name | tojson }};
+  const PRODUCT_IMAGE = {{ product.image | tojson }};
   const PRICE = {{ (product.price / 100) | int }};
 
   const firstActive = document.querySelector(".size-btn--active");
@@ -100,6 +104,19 @@
   document.getElementById("qty-inc").addEventListener("click", () => {
     qty++;
     document.getElementById("qty-val").textContent = qty;
+  });
+
+  document.getElementById("cart-btn").addEventListener("click", () => {
+    Cart.add({
+      key: PRODUCT_ID + "-" + selectedSize,
+      id: PRODUCT_ID,
+      name: PRODUCT_NAME,
+      price: PRICE,
+      size: selectedSize,
+      qty: qty,
+      image: PRODUCT_IMAGE,
+    });
+    showToast("Added to cart");
   });
 
   document.getElementById("whatsapp-btn").addEventListener("click", () => {
