@@ -34,6 +34,12 @@ async def init_db():
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(_CREATE_PRODUCTS)
         await db.execute(_CREATE_ORDERS)
+        try:
+            await db.execute(
+                "ALTER TABLE orders ADD COLUMN status TEXT NOT NULL DEFAULT 'pending'"
+            )
+        except Exception:
+            pass
         await db.commit()
 
 

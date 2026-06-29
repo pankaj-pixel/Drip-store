@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from database.db import init_db
-from routers import cart, orders, products
+from routers import admin, cart, orders, products
 
 
 @asynccontextmanager
@@ -18,3 +18,4 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(products.router)
 app.include_router(cart.router)
 app.include_router(orders.router)
+app.include_router(admin.router)

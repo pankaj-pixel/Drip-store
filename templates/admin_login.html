@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Admin Login · DRIP{% endblock %}
+
+{% block content %}
+<div class="admin-login-wrap">
+  <div class="admin-login-card">
+    <p class="admin-login-title">Admin</p>
+
+    {% if error %}
+    <p class="admin-login-error">{{ error }}</p>
+    {% endif %}
+
+    <form method="post" action="/admin/login" class="admin-login-form">
+      <label class="form-label" for="password">Password</label>
+      <input
+        class="form-input"
+        type="password"
+        id="password"
+        name="password"
+        autocomplete="current-password"
+        autofocus
+        required
+      >
+      <button class="btn btn--primary admin-login-btn" type="submit">Enter</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

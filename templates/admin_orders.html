@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Orders · DRIP Admin{% endblock %}
+
+{% block content %}
+<div class="admin-orders-wrap">
+
+  <div class="admin-header">
+    <h1 class="admin-orders-title">Orders</h1>
+    <a href="/admin/logout" class="admin-logout-btn">Logout</a>
+  </div>
+
+  {% if not orders %}
+  <p class="admin-empty">No orders yet.</p>
+  {% endif %}
+
+  {% for o in orders %}
+  <div class="admin-card">
+
+    <div class="admin-card__top">
+      <span class="admin-card__id">#{{ o.id }}</span>
+      <span class="admin-status admin-status--{{ o.status }}">{{ o.status }}</span>
+      <span class="admin-card__time">{{ o.created_at }}</span>
+    </div>
+
+    <div class="admin-card__customer">
+      <span class="admin-card__name">{{ o.customer_name }}</span>
+      <a class="admin-card__phone" href="tel:{{ o.phone }}">{{ o.phone }}</a>
+    </div>
+
+    <p class="admin-card__address">{{ o.address }}</p>
+
+    <ul class="admin-card__items">
+      {% for item in o.order_items %}
+      <li>
+        {{ item.name }}{% if item.size %} ({{ item.size }}){% endif %}
+        &times;{{ item.qty }}
+        &mdash; &#8377;{{ (item.price // 100) * item.qty }}
+      </li>
+      {% endfor %}
+    </ul>
+
+    <div class="admin-card__footer">
+      <span class="admin-card__total">&#8377;{{ o.total_inr | int }}</span>
+      <form method="post" action="/admin/orders/{{ o.id }}/status">
+        <button class="admin-status-btn" type="submit">
+          {% if o.status == "pending" %}Mark Confirmed
+          {% elif o.status == "confirmed" %}Mark Delivered
+          {% else %}Reset to Pending
+          {% endif %}
+        </button>
+      </form>
+    </div>
+
+  </div>
+  {% endfor %}
+
+</div>
+{% endblock %}

@@ -56,12 +56,19 @@ python database/seed.py
 - **Async DB**: All database calls use `aiosqlite` — use `async def` route handlers and `await` all DB operations.
 - **Mobile-first CSS**: Write base styles for mobile, then use `@media (min-width: ...)` for larger screens. Avoid desktop-first patterns.
 
-## Session Log
 
-| # | Name | Summary | Status | Date |
-|---|------|---------|--------|------|
-| 1 | db-and-models | database/db.py, seed.py, models/product.py, models/order.py | ✅ Done | 2026-06-28 |
-| 2 | product-listing | main.py, products router, home page UI | ✅ Done | 2026-06-28 |
-| 3 | product-detail | product page, size selector, WhatsApp button | ✅ Done | 2026-06-29 |
-| 4 | cart | localStorage cart, badge, cart page, WhatsApp order | ✅ Done | 2026-06-29 |
+
+## Session Log
+| # | Name | Feature | Status | Date |
+|---|---|---|---|---|
+| 1 | db-setup | DB init, models, seed data | ✅ Done | 2026-06-28 |
+
+
+2 | product-listing | main.py, products router, home page UI | ✅ Done | 2026-06-28 |
+
+| 3 | product-detail | product page, size selector, WhatsApp button | ✅ Done | 2026-06-28 |
+
+| 4 | cart | localStorage cart, badge, cart page, WhatsApp order | ✅ Done | 2026-06-28 |
+
 | 5 | checkout | checkout form, phone validation, order saved to DB, WhatsApp redirect, confirm page | ✅ Done | 2026-06-29 |
+| 6 | admin | password-protected admin panel, order dashboard, status toggle (pending→confirmed→delivered) | ✅ Done | 2026-06-29 |
