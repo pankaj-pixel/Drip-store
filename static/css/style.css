@@ -503,3 +503,257 @@ body {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+
+/* ── Checkout ──────────────────────────────────────────── */
+.checkout-wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: 32px;
+}
+
+.checkout-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 8px 16px 16px;
+}
+
+.form-error-banner {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  background: #fdecea;
+  border: 1px solid #f5c6c4;
+  border-radius: 10px;
+  color: #c0392b;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* Order summary on checkout page */
+.checkout-summary {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+.co-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.co-item:last-child {
+  border-bottom: none;
+}
+
+.co-item__name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.co-item__meta {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.co-item__price {
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.co-free-del {
+  font-size: 0.72rem;
+  color: #2e7d32;
+  font-weight: 600;
+  padding-top: 10px;
+  text-align: right;
+}
+
+/* Form fields */
+.checkout-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.form-field {
+  margin-bottom: 18px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 7px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--surface);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-input:focus {
+  border-color: var(--accent);
+}
+
+.form-input-group {
+  display: flex;
+  align-items: stretch;
+}
+
+.form-prefix {
+  padding: 0 12px;
+  background: #f0f0f0;
+  border: 1.5px solid #ddd;
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  display: flex;
+  align-items: center;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.form-input--joined {
+  border-radius: 0 10px 10px 0;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 90px;
+  line-height: 1.5;
+}
+
+.form-hint {
+  display: block;
+  font-size: 0.72rem;
+  margin-top: 5px;
+  min-height: 1em;
+}
+
+.form-hint--err {
+  color: #c0392b;
+}
+
+.checkout-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 800;
+  padding: 16px 0 4px;
+  border-top: 1.5px solid #e5e5e5;
+  margin-bottom: 4px;
+}
+
+.checkout-submit {
+  margin-top: 20px;
+}
+
+/* ── Confirm page ──────────────────────────────────────── */
+.confirm-wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 0 40px;
+  text-align: center;
+}
+
+.confirm-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-size: 1.8rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.confirm-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+
+.confirm-sub {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+
+.confirm-card {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 14px 16px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.confirm-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  font-weight: 800;
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 1.5px solid #e5e5e5;
+}
+
+.confirm-msg {
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.confirm-msg p {
+  font-size: 0.88rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.confirm-msg__phone {
+  font-size: 1rem !important;
+  font-weight: 700;
+  color: var(--text) !important;
+}
+
+.confirm-msg__addr {
+  font-size: 0.82rem !important;
+  margin-top: 4px;
+}
+
+.confirm-home-btn {
+  display: inline-block;
+  padding: 14px 32px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  text-align: center;
+}

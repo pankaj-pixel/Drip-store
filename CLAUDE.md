@@ -64,3 +64,4 @@ python database/seed.py
 | 2 | product-listing | main.py, products router, home page UI | ✅ Done | 2026-06-28 |
 | 3 | product-detail | product page, size selector, WhatsApp button | ✅ Done | 2026-06-29 |
 | 4 | cart | localStorage cart, badge, cart page, WhatsApp order | ✅ Done | 2026-06-29 |
+| 5 | checkout | checkout form, phone validation, order saved to DB, WhatsApp redirect, confirm page | ✅ Done | 2026-06-29 |

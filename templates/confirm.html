@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Order Placed — DRIP{% endblock %}
+
+{% block content %}
+<div class="confirm-wrap">
+  <div class="confirm-icon">✓</div>
+  <h2 class="confirm-title">Order Placed!</h2>
+  <p class="confirm-sub">Order #{{ order.id }} · {{ order.customer_name }}</p>
+
+  <div class="confirm-card">
+    {% for item in items %}
+    <div class="co-item">
+      <span class="co-item__name">
+        {{ item.name }}
+        <span class="co-item__meta">
+          {% if item.size %}Size: {{ item.size }} · {% endif %}×{{ item.qty }}
+        </span>
+      </span>
+      <span class="co-item__price">₹{{ "{:,}".format((item.price // 100) * item.qty) }}</span>
+    </div>
+    {% endfor %}
+    <div class="co-free-del">Free delivery</div>
+    <div class="confirm-total">
+      <span>Total</span>
+      <span>₹{{ "{:,}".format(total_inr) }}</span>
+    </div>
+  </div>
+
+  <div class="confirm-msg">
+    <p>We will call you to confirm your order.</p>
+    <p class="confirm-msg__phone">{{ order.phone }}</p>
+    <p class="confirm-msg__addr">{{ order.address }}</p>
+  </div>
+
+  <a href="/" class="btn btn--primary confirm-home-btn">Continue Shopping</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const WA_PHONE = "{{ wa_phone }}";
+  const WA_MSG = {{ wa_msg | tojson }};
+
+  document.addEventListener("DOMContentLoaded", () => {
+    Cart.clear();
+    window.open("https://wa.me/" + WA_PHONE + "?text=" + encodeURIComponent(WA_MSG), "_blank");
+  });
+</script>
+{% endblock %}

@@ -44,8 +44,6 @@
 
 {% block scripts %}
 <script>
-  const PHONE = "918826662645";
-
   function fmt(n) {
     return "₹" + n.toLocaleString("en-IN");
   }
@@ -103,20 +101,8 @@
   }
 
   document.getElementById("cart-whatsapp-btn").addEventListener("click", () => {
-    const items = Cart.get();
-    if (items.length === 0) return;
-
-    const lines = items.map(i => {
-      const sizeStr = i.size ? ` (Size: ${i.size})` : "";
-      return `*${i.name}*${sizeStr} ×${i.qty} — ${fmt(i.price * i.qty)}`;
-    });
-
-    const msg =
-      `Hi, I want to order from DRIP:\n\n` +
-      lines.join("\n") +
-      `\n\nTotal: ${fmt(Cart.total())}\nFree delivery please.`;
-
-    window.open(`https://wa.me/${PHONE}?text=${encodeURIComponent(msg)}`, "_blank");
+    if (Cart.get().length === 0) return;
+    window.location.href = "/checkout";
   });
 
   renderCart();
