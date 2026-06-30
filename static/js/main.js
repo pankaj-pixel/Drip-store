@@ -61,3 +61,14 @@ function showToast(msg) {
 }
 
 document.addEventListener("DOMContentLoaded", () => Cart.renderBadge());
+
+// Splash — show once per browser session
+(function () {
+  var splash = document.getElementById("splash");
+  if (!splash || splash.style.display === "none") return;
+  sessionStorage.setItem("splashSeen", "1");
+  setTimeout(function () {
+    splash.classList.add("splash--exit");
+    splash.addEventListener("transitionend", function () { splash.remove(); }, { once: true });
+  }, 2000);
+}());

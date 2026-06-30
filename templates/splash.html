@@ -1,0 +1,12 @@
+<div class="splash" id="splash" aria-hidden="true">
+  <div class="splash__inner">
+    <span class="splash__word">DRIP</span>
+    <p class="splash__tag">Chattarpur ka style</p>
+  </div>
+</div>
+<script>
+  if (sessionStorage.getItem('splashSeen')) {
+    var s = document.getElementById('splash');
+    if (s) s.style.display = 'none';
+  }
+</script>

@@ -3,6 +3,16 @@
 {% block title %}DRIP — Men's Clothing{% endblock %}
 
 {% block content %}
+{% include "splash.html" %}
+
+<section class="hero">
+  <div class="hero__inner">
+    <h1 class="hero__headline">FRESH FITS.<br><span class="hero__accent">ZERO DELIVERY FEE.</span></h1>
+    <p class="hero__sub">Chattarpur · South Delhi · Free delivery</p>
+  </div>
+  <div class="hero__scroll" aria-hidden="true">↓</div>
+</section>
+
 <div class="product-grid">
   {% for product in products %}
   <a href="/product/{{ product.id }}" class="card">
