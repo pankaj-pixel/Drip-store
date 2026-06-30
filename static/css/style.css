@@ -1095,3 +1095,38 @@ body {
     font-size: clamp(3rem, 6vw, 4.5rem);
   }
 }
+
+/* ── Category chips ─────────────────────────────────────── */
+.chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 16px 0 12px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex-shrink: 0;
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: 1.5px solid #ddd;
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.chip--active {
+  background: var(--lime);
+  border-color: var(--lime);
+  color: #0a0a0a;
+}

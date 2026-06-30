@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
@@ -10,13 +10,32 @@ templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/", response_class=HTMLResponse)
-async def home(request: Request):
+async def home(request: Request, category: str | None = Query(default=None)):
+    active = category.lower().strip() if category else ""
     async with get_db() as db:
-        cursor = await db.execute("SELECT * FROM products WHERE in_stock = 1")
-        rows = await cursor.fetchall()
-    products_list = [Product(**dict(row)) for row in rows]
+        cat_cursor = await db.execute(
+            "SELECT DISTINCT category FROM products WHERE in_stock = 1 ORDER BY category"
+        )
+        cat_rows = await cat_cursor.fetchall()
+
+        if active:
+            prod_cursor = await db.execute(
+                "SELECT * FROM products WHERE in_stock = 1 AND category = ?", (active,)
+            )
+        else:
+            prod_cursor = await db.execute("SELECT * FROM products WHERE in_stock = 1")
+        prod_rows = await prod_cursor.fetchall()
+
+    categories = [row[0] for row in cat_rows]
+    products_list = [Product(**dict(row)) for row in prod_rows]
     return templates.TemplateResponse(
-        "home.html", {"request": request, "products": products_list}
+        "home.html",
+        {
+            "request": request,
+            "products": products_list,
+            "categories": categories,
+            "active_category": active,
+        },
     )
 
 

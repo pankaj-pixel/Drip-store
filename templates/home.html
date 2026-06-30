@@ -13,6 +13,14 @@
   <div class="hero__scroll" aria-hidden="true">↓</div>
 </section>
 
+<div class="chips">
+  <a href="/" class="chip {% if not active_category %}chip--active{% endif %}">All</a>
+  {% for cat in categories %}
+  <a href="/?category={{ cat }}"
+     class="chip {% if active_category == cat %}chip--active{% endif %}">{{ cat | title }}</a>
+  {% endfor %}
+</div>
+
 <div class="product-grid">
   {% for product in products %}
   <a href="/product/{{ product.id }}" class="card">
