@@ -4,8 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**DRIP** — Men's clothing e-commerce store based in Chattarpur, South Delhi.
-- Target customers: men aged 18–35 near Chattarpur metro
+**DRIP** — Men's clothing e-commerce store serving all of Delhi.
+- Target customers: men aged 18–35 across Delhi NCR
 - No user login. No payment gateway. Orders placed via WhatsApp.
 - Free delivery on all orders.
 - Mobile-first UI (primary device for the target demographic).

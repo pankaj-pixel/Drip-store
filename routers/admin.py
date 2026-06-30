@@ -1,8 +1,11 @@
+import io
 import json
 import os
 import uuid
 from pathlib import Path
 from typing import List
+
+from PIL import Image
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, File, Form, Request, UploadFile
@@ -48,6 +51,19 @@ def _is_auth(request: Request) -> bool:
         return False
 
 
+def _compress_image(data: bytes) -> bytes:
+    img = Image.open(io.BytesIO(data))
+    if img.mode in ("RGBA", "P", "LA"):
+        img = img.convert("RGB")
+    w, h = img.size
+    if max(w, h) > 1200:
+        scale = 1200 / max(w, h)
+        img = img.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
+    out = io.BytesIO()
+    img.save(out, format="WEBP", quality=80, method=4)
+    return out.getvalue()
+
+
 async def _save_file(
     file: UploadFile | None,
     allowed_types: set,
@@ -61,7 +77,11 @@ async def _save_file(
         return None, f'"{file.filename}" exceeds {mb} MB limit.'
     if file.content_type not in allowed_types:
         return None, f'"{file.filename}": file type not allowed.'
-    ext = Path(file.filename).suffix.lower()
+    if file.content_type in ALLOWED_IMAGES:
+        content = _compress_image(content)
+        ext = ".webp"
+    else:
+        ext = Path(file.filename).suffix.lower()
     fname = f"{uuid.uuid4().hex}{ext}"
     (UPLOAD_DIR / fname).write_bytes(content)
     return fname, None
