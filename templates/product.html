@@ -5,7 +5,9 @@
 {% block content %}
 <div class="pd">
 
-  <div class="pd__img-wrap">
+  {% set total_slides = product.images | length + (1 if product.video else 0) %}
+
+  <div class="gallery" id="gallery">
     <a href="/" class="pd__back" aria-label="Back">
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
            fill="none" stroke="currentColor" stroke-width="2.5"
@@ -13,12 +15,28 @@
         <polyline points="15 18 9 12 15 6"/>
       </svg>
     </a>
-    <img
-      src="/static/uploads/{{ product.image }}"
-      alt="{{ product.name }}"
-      class="pd__img"
-    >
+    {% for img in product.images %}
+    <div class="gallery__slide">
+      <img src="/static/uploads/{{ img }}" alt="{{ product.name }} — photo {{ loop.index }}" class="gallery__img">
+    </div>
+    {% endfor %}
+    {% if product.video %}
+    <div class="gallery__slide">
+      <video class="gallery__img" controls playsinline preload="metadata">
+        <source src="/static/uploads/{{ product.video }}">
+      </video>
+    </div>
+    {% endif %}
   </div>
+
+  {% if total_slides > 1 %}
+  <div class="gallery__dots" id="gallery-dots">
+    {% for i in range(total_slides) %}
+    <button class="gallery__dot{% if loop.first %} gallery__dot--active{% endif %}"
+            data-index="{{ loop.index0 }}" aria-label="Slide {{ loop.index }}"></button>
+    {% endfor %}
+  </div>
+  {% endif %}
 
   <div class="pd__info">
 
@@ -79,10 +97,23 @@
 </div>
 
 <script>
+  // Gallery
+  const gallery = document.getElementById("gallery");
+  const dots    = document.querySelectorAll(".gallery__dot");
+  if (gallery && dots.length) {
+    gallery.addEventListener("scroll", () => {
+      const idx = Math.round(gallery.scrollLeft / gallery.offsetWidth);
+      dots.forEach((d, i) => d.classList.toggle("gallery__dot--active", i === idx));
+    }, { passive: true });
+    dots.forEach(dot => dot.addEventListener("click", () => {
+      gallery.scrollTo({ left: +dot.dataset.index * gallery.offsetWidth, behavior: "smooth" });
+    }));
+  }
+
   const PHONE = "918826662645";
   const PRODUCT_ID = {{ product.id }};
   const PRODUCT_NAME = {{ product.name | tojson }};
-  const PRODUCT_IMAGE = {{ product.image | tojson }};
+  const PRODUCT_IMAGE = {{ product.images[0] | tojson }};
   const PRICE = {{ (product.price / 100) | int }};
 
   const firstActive = document.querySelector(".size-btn--active");

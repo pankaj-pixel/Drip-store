@@ -6,7 +6,10 @@
 
   <div class="admin-header">
     <h1 class="admin-orders-title">Orders</h1>
-    <a href="/admin/logout" class="admin-logout-btn">Logout</a>
+    <div class="admin-header-actions">
+      <a href="/admin/products" class="admin-logout-btn">Products</a>
+      <a href="/admin/logout" class="admin-logout-btn">Logout</a>
+    </div>
   </div>
 
   {% if not orders %}

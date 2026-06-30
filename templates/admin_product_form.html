@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}{% if product %}Edit Product{% else %}New Product{% endif %} · DRIP Admin{% endblock %}
+
+{% block content %}
+<div class="admin-orders-wrap">
+
+  <div class="admin-header">
+    <h1 class="admin-orders-title">{% if product %}Edit Product{% else %}New Product{% endif %}</h1>
+    <div class="admin-header-actions">
+      <a href="/admin/products" class="admin-logout-btn">← Products</a>
+      <a href="/admin/logout" class="admin-logout-btn">Logout</a>
+    </div>
+  </div>
+
+  {% if error %}
+  <div class="form-error-banner">{{ error }}</div>
+  {% endif %}
+
+  <form
+    method="post"
+    action="{% if product %}/admin/products/{{ product.id }}/edit{% else %}/admin/products/new{% endif %}"
+    enctype="multipart/form-data"
+  >
+
+    <!-- Name -->
+    <div class="form-field">
+      <label class="form-label" for="f-name">Product Name</label>
+      <input class="form-input" type="text" id="f-name" name="name" required
+             value="{{ product.name if product else '' }}"
+             placeholder="e.g. Oversized Fleece Hoodie">
+    </div>
+
+    <!-- Category -->
+    <div class="form-field">
+      <label class="form-label" for="f-category">Category</label>
+      <select class="form-input" id="f-category" name="category" onchange="toggleNewCat(this)">
+        {% for cat in categories %}
+        <option value="{{ cat }}"
+          {% if product and product.category == cat %}selected{% endif %}>{{ cat | title }}</option>
+        {% endfor %}
+        <option value="__new__">+ Add new category…</option>
+      </select>
+    </div>
+    <div class="form-field" id="new-cat-wrap" style="display:none">
+      <label class="form-label" for="f-new-cat">New Category Name</label>
+      <input class="form-input" type="text" id="f-new-cat" name="new_category"
+             placeholder="e.g. co-ords">
+    </div>
+
+    <!-- Price -->
+    <div class="form-field">
+      <label class="form-label" for="f-price">Price (₹)</label>
+      <div class="form-input-group">
+        <span class="form-prefix">₹</span>
+        <input class="form-input form-input--joined" type="number" id="f-price"
+               name="price_inr" min="1" required
+               value="{{ (product.price / 100) | int if product else '' }}"
+               placeholder="799">
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="form-field">
+      <label class="form-label" for="f-desc">Description</label>
+      <textarea class="form-input form-textarea" id="f-desc" name="description"
+                placeholder="Short product description…">{{ product.description if product else '' }}</textarea>
+    </div>
+
+    <!-- Sizes -->
+    <div class="form-field">
+      <label class="form-label">Sizes</label>
+      <div class="apf-checks">
+        {% for sz in ["S", "M", "L", "XL"] %}
+        <label class="apf-check-label">
+          <input type="checkbox" name="sizes" value="{{ sz }}"
+                 {% if product and sz in product.sizes %}checked{% endif %}>
+          {{ sz }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- In Stock toggle -->
+    <div class="form-field">
+      <label class="form-label">Availability</label>
+      <label class="apf-toggle">
+        <input type="checkbox" name="in_stock" value="1"
+               {% if not product or product.in_stock %}checked{% endif %}>
+        <span class="apf-toggle__label">In stock (visible to customers)</span>
+      </label>
+    </div>
+
+    <!-- Photos -->
+    <div class="form-field">
+      <label class="form-label">Photos — max 3 · JPG / PNG / WEBP · 5 MB each</label>
+      <div class="apf-upload-grid">
+        {% for i in range(3) %}
+        <div class="apf-upload-slot">
+          {% if product and product.images | length > i %}
+            <input type="hidden" name="existing_{{ i }}" value="{{ product.images[i] }}">
+            <img class="apf-preview" id="preview-{{ i }}"
+                 src="/static/uploads/{{ product.images[i] }}" alt="Photo {{ i + 1 }}">
+            <label class="apf-remove-row">
+              <input type="checkbox" name="remove_{{ i }}" value="1"
+                     onchange="dimPreview({{ i }}, this.checked)">
+              Remove
+            </label>
+          {% else %}
+            <input type="hidden" name="existing_{{ i }}" value="">
+            <div class="apf-preview apf-preview--empty" id="preview-{{ i }}"></div>
+          {% endif %}
+          <label class="apf-file-label">
+            <input class="apf-file-input" type="file" name="photo_{{ i }}"
+                   accept="image/jpeg,image/png,image/webp"
+                   onchange="previewPhoto(this, {{ i }})">
+            <span class="apf-slot-label">Photo {{ i + 1 }}</span>
+          </label>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Video -->
+    <div class="form-field">
+      <label class="form-label">Video — optional · MP4 / MOV · 20 MB max</label>
+      {% if product and product.video %}
+        <input type="hidden" name="existing_video" value="{{ product.video }}">
+        <p class="apf-existing-video">
+          Current: <strong>{{ product.video }}</strong>
+          <label class="apf-remove-inline">
+            <input type="checkbox" name="remove_video" value="1"> Remove
+          </label>
+        </p>
+      {% else %}
+        <input type="hidden" name="existing_video" value="">
+      {% endif %}
+      <input class="form-input apf-file-input-full" type="file" name="video_file"
+             accept="video/mp4,video/quicktime"
+             onchange="checkVideoSize(this)">
+    </div>
+
+    <button class="btn btn--primary apf-submit" type="submit">
+      {% if product %}Save Changes{% else %}Create Product{% endif %}
+    </button>
+
+  </form>
+</div>
+
+<script>
+function toggleNewCat(sel) {
+  document.getElementById("new-cat-wrap").style.display =
+    sel.value === "__new__" ? "block" : "none";
+}
+
+function previewPhoto(input, i) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    alert("Photo must be under 5 MB.");
+    input.value = "";
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const el = document.getElementById("preview-" + i);
+    if (el.tagName === "IMG") {
+      el.src = e.target.result;
+    } else {
+      const img = document.createElement("img");
+      img.id = "preview-" + i;
+      img.className = "apf-preview";
+      img.src = e.target.result;
+      el.replaceWith(img);
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function dimPreview(i, dimmed) {
+  const el = document.getElementById("preview-" + i);
+  if (el) el.style.opacity = dimmed ? "0.3" : "1";
+}
+
+function checkVideoSize(input) {
+  const file = input.files[0];
+  if (file && file.size > 20 * 1024 * 1024) {
+    alert("Video must be under 20 MB.");
+    input.value = "";
+  }
+}
+</script>
+{% endblock %}

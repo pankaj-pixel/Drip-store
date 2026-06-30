@@ -1,13 +1,17 @@
 import json
 import os
+import uuid
+from pathlib import Path
+from typing import List
 
 from dotenv import load_dotenv
-from fastapi import APIRouter, Form, Request
+from fastapi import APIRouter, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from itsdangerous import BadSignature, URLSafeSerializer
 
 from database.db import get_db
+from models.product import Product
 
 load_dotenv()
 
@@ -18,6 +22,12 @@ ADMIN_PASS = os.getenv("ADMIN_PASS", "drip123")
 SECRET_KEY = os.getenv("SECRET_KEY", "change-me")
 _signer = URLSafeSerializer(SECRET_KEY, salt="admin-session")
 COOKIE = "drip_admin"
+
+UPLOAD_DIR = Path("static/uploads")
+ALLOWED_IMAGES = {"image/jpeg", "image/png", "image/webp"}
+ALLOWED_VIDEO = {"video/mp4", "video/quicktime"}
+MAX_PHOTO_BYTES = 5 * 1024 * 1024
+MAX_VIDEO_BYTES = 20 * 1024 * 1024
 
 STATUS_CYCLE = {
     "pending": "confirmed",
@@ -36,6 +46,35 @@ def _is_auth(request: Request) -> bool:
     except BadSignature:
         return False
 
+
+async def _save_file(
+    file: UploadFile | None,
+    allowed_types: set,
+    max_bytes: int,
+) -> tuple:
+    if not file or not file.filename:
+        return None, None
+    content = await file.read()
+    if len(content) > max_bytes:
+        mb = max_bytes // (1024 * 1024)
+        return None, f'"{file.filename}" exceeds {mb} MB limit.'
+    if file.content_type not in allowed_types:
+        return None, f'"{file.filename}": file type not allowed.'
+    ext = Path(file.filename).suffix.lower()
+    fname = f"{uuid.uuid4().hex}{ext}"
+    (UPLOAD_DIR / fname).write_bytes(content)
+    return fname, None
+
+
+async def _get_categories() -> list:
+    async with get_db() as db:
+        cursor = await db.execute(
+            "SELECT DISTINCT category FROM products ORDER BY category"
+        )
+        return [row[0] for row in await cursor.fetchall()]
+
+
+# ── Auth / login ──────────────────────────────────────────
 
 @router.get("", response_class=HTMLResponse)
 async def admin_root(request: Request):
@@ -57,6 +96,15 @@ async def admin_login(request: Request, password: str = Form(...)):
         status_code=401,
     )
 
+
+@router.get("/logout")
+async def admin_logout():
+    response = RedirectResponse("/admin", status_code=302)
+    response.delete_cookie(COOKIE)
+    return response
+
+
+# ── Orders ────────────────────────────────────────────────
 
 @router.get("/orders", response_class=HTMLResponse)
 async def admin_orders(request: Request):
@@ -95,8 +143,266 @@ async def toggle_status(request: Request, order_id: int):
     return RedirectResponse("/admin/orders", status_code=303)
 
 
-@router.get("/logout")
-async def admin_logout():
-    response = RedirectResponse("/admin", status_code=302)
-    response.delete_cookie(COOKIE)
-    return response
+# ── Products list ─────────────────────────────────────────
+
+@router.get("/products", response_class=HTMLResponse)
+async def admin_products(request: Request):
+    if not _is_auth(request):
+        return RedirectResponse("/admin", status_code=302)
+    async with get_db() as db:
+        cursor = await db.execute("SELECT * FROM products ORDER BY id DESC")
+        rows = await cursor.fetchall()
+    products = [Product(**dict(row)) for row in rows]
+    return templates.TemplateResponse(
+        "admin_products.html", {"request": request, "products": products}
+    )
+
+
+# ── New product ───────────────────────────────────────────
+
+@router.get("/products/new", response_class=HTMLResponse)
+async def admin_product_new_form(request: Request):
+    if not _is_auth(request):
+        return RedirectResponse("/admin", status_code=302)
+    categories = await _get_categories()
+    return templates.TemplateResponse(
+        "admin_product_form.html",
+        {"request": request, "product": None, "categories": categories, "error": ""},
+    )
+
+
+@router.post("/products/new")
+async def admin_product_create(
+    request: Request,
+    name: str = Form(...),
+    category: str = Form(...),
+    new_category: str = Form(default=""),
+    price_inr: int = Form(...),
+    description: str = Form(default=""),
+    sizes: List[str] = Form(default=[]),
+    in_stock: str = Form(default=""),
+    photo_0: UploadFile | None = File(default=None),
+    photo_1: UploadFile | None = File(default=None),
+    photo_2: UploadFile | None = File(default=None),
+    video_file: UploadFile | None = File(default=None),
+):
+    if not _is_auth(request):
+        return RedirectResponse("/admin", status_code=302)
+
+    actual_category = new_category.strip() if category == "__new__" else category
+    errors: list = []
+    images: list = []
+
+    for photo in [photo_0, photo_1, photo_2]:
+        fname, err = await _save_file(photo, ALLOWED_IMAGES, MAX_PHOTO_BYTES)
+        if err:
+            errors.append(err)
+        elif fname:
+            images.append(fname)
+
+    video = None
+    v_fname, v_err = await _save_file(video_file, ALLOWED_VIDEO, MAX_VIDEO_BYTES)
+    if v_err:
+        errors.append(v_err)
+    else:
+        video = v_fname
+
+    if errors or not actual_category or not name.strip():
+        categories = await _get_categories()
+        return templates.TemplateResponse(
+            "admin_product_form.html",
+            {
+                "request": request,
+                "product": None,
+                "categories": categories,
+                "error": " ".join(errors) if errors else "Name and category are required.",
+            },
+            status_code=422,
+        )
+
+    async with get_db() as db:
+        await db.execute(
+            """
+            INSERT INTO products (name, category, price, sizes, image, images, video, description, in_stock)
+            VALUES (?, ?, ?, ?, '', ?, ?, ?, ?)
+            """,
+            (
+                name.strip(),
+                actual_category,
+                price_inr * 100,
+                json.dumps(sizes),
+                json.dumps(images),
+                video,
+                description.strip(),
+                1 if in_stock else 0,
+            ),
+        )
+        await db.commit()
+    return RedirectResponse("/admin/products", status_code=303)
+
+
+# ── Edit product ──────────────────────────────────────────
+
+@router.get("/products/{product_id}/edit", response_class=HTMLResponse)
+async def admin_product_edit_form(request: Request, product_id: int):
+    if not _is_auth(request):
+        return RedirectResponse("/admin", status_code=302)
+    async with get_db() as db:
+        cursor = await db.execute("SELECT * FROM products WHERE id = ?", (product_id,))
+        row = await cursor.fetchone()
+    if not row:
+        return RedirectResponse("/admin/products", status_code=302)
+    categories = await _get_categories()
+    product = Product(**dict(row))
+    return templates.TemplateResponse(
+        "admin_product_form.html",
+        {"request": request, "product": product, "categories": categories, "error": ""},
+    )
+
+
+@router.post("/products/{product_id}/edit")
+async def admin_product_update(
+    request: Request,
+    product_id: int,
+    name: str = Form(...),
+    category: str = Form(...),
+    new_category: str = Form(default=""),
+    price_inr: int = Form(...),
+    description: str = Form(default=""),
+    sizes: List[str] = Form(default=[]),
+    in_stock: str = Form(default=""),
+    existing_0: str = Form(default=""),
+    existing_1: str = Form(default=""),
+    existing_2: str = Form(default=""),
+    remove_0: str = Form(default=""),
+    remove_1: str = Form(default=""),
+    remove_2: str = Form(default=""),
+    photo_0: UploadFile | None = File(default=None),
+    photo_1: UploadFile | None = File(default=None),
+    photo_2: UploadFile | None = File(default=None),
+    existing_video: str = Form(default=""),
+    remove_video: str = Form(default=""),
+    video_file: UploadFile | None = File(default=None),
+):
+    if not _is_auth(request):
+        return RedirectResponse("/admin", status_code=302)
+
+    actual_category = new_category.strip() if category == "__new__" else category
+    errors: list = []
+
+    existing_slots = [existing_0, existing_1, existing_2]
+    remove_slots = [remove_0 == "1", remove_1 == "1", remove_2 == "1"]
+    photo_slots = [photo_0, photo_1, photo_2]
+    images: list = []
+
+    for i in range(3):
+        existing = existing_slots[i]
+        remove = remove_slots[i]
+        photo = photo_slots[i]
+
+        if photo and photo.filename:
+            fname, err = await _save_file(photo, ALLOWED_IMAGES, MAX_PHOTO_BYTES)
+            if err:
+                errors.append(err)
+            else:
+                if existing:
+                    (UPLOAD_DIR / existing).unlink(missing_ok=True)
+                if fname:
+                    images.append(fname)
+        elif existing and not remove:
+            images.append(existing)
+        elif existing and remove:
+            (UPLOAD_DIR / existing).unlink(missing_ok=True)
+
+    video = None
+    if video_file and video_file.filename:
+        v_fname, v_err = await _save_file(video_file, ALLOWED_VIDEO, MAX_VIDEO_BYTES)
+        if v_err:
+            errors.append(v_err)
+        else:
+            if existing_video:
+                (UPLOAD_DIR / existing_video).unlink(missing_ok=True)
+            video = v_fname
+    elif existing_video and remove_video != "1":
+        video = existing_video
+    elif existing_video and remove_video == "1":
+        (UPLOAD_DIR / existing_video).unlink(missing_ok=True)
+
+    if errors:
+        async with get_db() as db:
+            cursor = await db.execute("SELECT * FROM products WHERE id = ?", (product_id,))
+            row = await cursor.fetchone()
+        categories = await _get_categories()
+        product = Product(**dict(row)) if row else None
+        return templates.TemplateResponse(
+            "admin_product_form.html",
+            {
+                "request": request,
+                "product": product,
+                "categories": categories,
+                "error": " ".join(errors),
+            },
+            status_code=422,
+        )
+
+    async with get_db() as db:
+        await db.execute(
+            """
+            UPDATE products SET
+                name = ?, category = ?, price = ?, sizes = ?,
+                images = ?, video = ?, description = ?, in_stock = ?
+            WHERE id = ?
+            """,
+            (
+                name.strip(),
+                actual_category,
+                price_inr * 100,
+                json.dumps(sizes),
+                json.dumps(images),
+                video,
+                description.strip(),
+                1 if in_stock else 0,
+                product_id,
+            ),
+        )
+        await db.commit()
+    return RedirectResponse("/admin/products", status_code=303)
+
+
+# ── Delete / toggle stock ─────────────────────────────────
+
+@router.post("/products/{product_id}/delete")
+async def admin_product_delete(request: Request, product_id: int):
+    if not _is_auth(request):
+        return RedirectResponse("/admin", status_code=302)
+    async with get_db() as db:
+        cursor = await db.execute(
+            "SELECT images, video FROM products WHERE id = ?", (product_id,)
+        )
+        row = await cursor.fetchone()
+        if row:
+            for fname in json.loads(row["images"] or "[]"):
+                (UPLOAD_DIR / fname).unlink(missing_ok=True)
+            if row["video"]:
+                (UPLOAD_DIR / row["video"]).unlink(missing_ok=True)
+            await db.execute("DELETE FROM products WHERE id = ?", (product_id,))
+            await db.commit()
+    return RedirectResponse("/admin/products", status_code=303)
+
+
+@router.post("/products/{product_id}/toggle-stock")
+async def admin_product_toggle_stock(request: Request, product_id: int):
+    if not _is_auth(request):
+        return RedirectResponse("/admin", status_code=302)
+    async with get_db() as db:
+        cursor = await db.execute(
+            "SELECT in_stock FROM products WHERE id = ?", (product_id,)
+        )
+        row = await cursor.fetchone()
+        if row:
+            await db.execute(
+                "UPDATE products SET in_stock = ? WHERE id = ?",
+                (0 if row["in_stock"] else 1, product_id),
+            )
+            await db.commit()
+    return RedirectResponse("/admin/products", status_code=303)

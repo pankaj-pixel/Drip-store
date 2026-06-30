@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Products · DRIP Admin{% endblock %}
+
+{% block content %}
+<div class="admin-orders-wrap">
+
+  <div class="admin-header">
+    <h1 class="admin-orders-title">Products</h1>
+    <div class="admin-header-actions">
+      <a href="/admin/orders" class="admin-logout-btn">Orders</a>
+      <a href="/admin/logout" class="admin-logout-btn">Logout</a>
+    </div>
+  </div>
+
+  <a href="/admin/products/new" class="btn btn--primary ap-add-btn">+ Add Product</a>
+
+  {% if not products %}
+  <p class="admin-empty">No products yet. Add one above.</p>
+  {% endif %}
+
+  {% for p in products %}
+  <div class="ap-card">
+
+    <div class="ap-card__left">
+      {% if p.images %}
+      <img class="ap-card__thumb" src="/static/uploads/{{ p.images[0] }}" alt="{{ p.name }}"
+           onerror="this.style.visibility='hidden'">
+      {% else %}
+      <div class="ap-card__thumb ap-card__thumb--empty"></div>
+      {% endif %}
+    </div>
+
+    <div class="ap-card__info">
+      <p class="ap-card__name">{{ p.name }}</p>
+      <p class="ap-card__meta">{{ p.category | title }} · ₹{{ (p.price / 100) | int }}</p>
+      <span class="admin-status {% if p.in_stock %}admin-status--confirmed{% else %}admin-status--pending{% endif %}">
+        {% if p.in_stock %}In Stock{% else %}Out of Stock{% endif %}
+      </span>
+    </div>
+
+    <div class="ap-card__actions">
+      <a href="/admin/products/{{ p.id }}/edit" class="ap-btn ap-btn--edit">Edit</a>
+      <form method="post" action="/admin/products/{{ p.id }}/toggle-stock">
+        <button class="ap-btn ap-btn--stock" type="submit">
+          {% if p.in_stock %}Mark Out{% else %}Mark In{% endif %}
+        </button>
+      </form>
+      <form method="post" action="/admin/products/{{ p.id }}/delete"
+            onsubmit="return confirm('Delete {{ p.name }}? This cannot be undone.')">
+        <button class="ap-btn ap-btn--delete" type="submit">Delete</button>
+      </form>
+    </div>
+
+  </div>
+  {% endfor %}
+
+</div>
+{% endblock %}

@@ -40,6 +40,20 @@ async def init_db():
             )
         except Exception:
             pass
+        try:
+            await db.execute(
+                "ALTER TABLE products ADD COLUMN images TEXT NOT NULL DEFAULT '[]'"
+            )
+        except Exception:
+            pass
+        try:
+            await db.execute("ALTER TABLE products ADD COLUMN video TEXT")
+        except Exception:
+            pass
+        # Migrate single image → JSON array for existing rows
+        await db.execute(
+            "UPDATE products SET images = json_array(image) WHERE images = '[]' AND image != ''"
+        )
         await db.commit()
 
 
