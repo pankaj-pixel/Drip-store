@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Reels · DRIP Admin{% endblock %}
+
+{% block content %}
+<div class="admin-orders-wrap">
+
+  <div class="admin-header">
+    <h1 class="admin-orders-title">Reels</h1>
+    <div class="admin-header-actions">
+      <a href="/admin/orders" class="admin-logout-btn">Orders</a>
+      <a href="/admin/products" class="admin-logout-btn">Products</a>
+      <a href="/admin/logout" class="admin-logout-btn">Logout</a>
+    </div>
+  </div>
+
+  {% if error %}
+  <div class="form-error-banner">{{ error }}</div>
+  {% endif %}
+
+  <form method="post" action="/admin/reels/new" enctype="multipart/form-data">
+    <div class="form-field">
+      <label class="form-label" for="video_file">Video (MP4 / MOV · 20 MB max)</label>
+      <input class="form-input apf-file-input-full" type="file" id="video_file"
+             name="video_file" accept="video/mp4,video/quicktime" required
+             onchange="checkVideoSize(this)">
+    </div>
+    <div class="form-field">
+      <label class="form-label" for="instagram_url">Instagram URL (optional — for credit link)</label>
+      <input class="form-input" type="url" id="instagram_url" name="instagram_url"
+             placeholder="https://www.instagram.com/reel/ABC123/">
+    </div>
+    <div class="form-field">
+      <label class="form-label" for="product_id">Link to Product (optional)</label>
+      <select class="form-input" id="product_id" name="product_id">
+        <option value="">— None —</option>
+        {% for p in products %}
+        <option value="{{ p.id }}">{{ p.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-field">
+      <label class="form-label" for="caption">Caption (optional)</label>
+      <input class="form-input" type="text" id="caption" name="caption"
+             placeholder="e.g. New drop just landed">
+    </div>
+    <button class="btn btn--primary" type="submit" style="padding:12px 0">Upload Reel</button>
+  </form>
+
+  <hr style="border:none;border-top:1px solid #eee;margin:24px 0 20px">
+
+  {% if not reels %}
+  <p class="admin-empty">No reels added yet.</p>
+  {% else %}
+
+  {% for r in reels %}
+  <div class="admin-card">
+    <div class="admin-card__top">
+      <span class="admin-card__id">#{{ r.id }}</span>
+      <span class="admin-card__time">{{ r.created_at }}</span>
+    </div>
+    <p class="reel-admin-meta" style="font-size:0.8rem;font-weight:600;margin-bottom:4px">
+      {{ r.video }}
+    </p>
+    {% if r.instagram_url %}
+    <p class="reel-admin-url">
+      <a href="{{ r.instagram_url }}" target="_blank" rel="noopener">{{ r.instagram_url }}</a>
+    </p>
+    {% endif %}
+    {% if r.product_name %}
+    <p class="reel-admin-meta">Linked: <strong>{{ r.product_name }}</strong></p>
+    {% endif %}
+    {% if r.caption %}
+    <p class="reel-admin-meta">"{{ r.caption }}"</p>
+    {% endif %}
+    <div class="admin-card__footer" style="margin-top:10px">
+      <span></span>
+      <form method="post" action="/admin/reels/{{ r.id }}/delete"
+            onsubmit="return confirm('Delete this reel and its video file?')">
+        <button class="ap-btn ap-btn--delete" type="submit">Delete</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+
+  {% endif %}
+
+</div>
+
+<script>
+function checkVideoSize(input) {
+  var file = input.files[0];
+  if (file && file.size > 20 * 1024 * 1024) {
+    alert("Video must be under 20 MB.");
+    input.value = "";
+  }
+}
+</script>
+{% endblock %}

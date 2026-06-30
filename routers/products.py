@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 
 from database.db import get_db
 from models.product import Product
+from models.reel import Reel
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -28,8 +29,18 @@ async def home(request: Request, category: str | None = Query(default=None)):
             prod_cursor = await db.execute("SELECT * FROM products WHERE in_stock = 1")
         prod_rows = await prod_cursor.fetchall()
 
+        reel_cursor = await db.execute(
+            """SELECT r.id, r.video, r.instagram_url, r.product_id, r.caption,
+                      r.created_at, p.name AS product_name
+               FROM reels r
+               LEFT JOIN products p ON p.id = r.product_id
+               ORDER BY r.id DESC"""
+        )
+        reel_rows = await reel_cursor.fetchall()
+
     categories = [row[0] for row in cat_rows]
     products_list = [Product(**dict(row)) for row in prod_rows]
+    reels = [Reel(**dict(row)) for row in reel_rows]
     return templates.TemplateResponse(
         "home.html",
         {
@@ -37,6 +48,7 @@ async def home(request: Request, category: str | None = Query(default=None)):
             "products": products_list,
             "categories": categories,
             "active_category": active,
+            "reels": reels,
         },
     )
 

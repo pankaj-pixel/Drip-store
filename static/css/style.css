@@ -1537,6 +1537,112 @@ body {
   font-size: 0.92rem;
 }
 
+/* ── Reels strip ─────────────────────────────────────────── */
+.reels-section {
+  margin: 20px 0 8px;
+}
+
+.reels-label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.reels-strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 2px;
+}
+
+.reels-strip::-webkit-scrollbar { display: none; }
+
+.reel-card {
+  flex-shrink: 0;
+  width: 160px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reel-video-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #111;
+}
+
+.reel-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.reel-ig-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  text-decoration: none;
+}
+
+.reel-caption {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.4;
+  padding: 0 2px;
+}
+
+.reel-shop-tag {
+  display: inline-block;
+  padding: 6px 14px;
+  background: var(--text);
+  color: var(--accent-text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 20px;
+  text-decoration: none;
+  letter-spacing: 0.03em;
+  align-self: flex-start;
+}
+
+/* ── Admin reels list ────────────────────────────────────── */
+.reel-admin-url {
+  font-size: 0.75rem;
+  word-break: break-all;
+  margin-bottom: 4px;
+}
+
+.reel-admin-url a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.reel-admin-meta {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
 /* ── Product gallery ─────────────────────────────────────── */
 .gallery {
   position: relative;

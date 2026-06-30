@@ -60,7 +60,26 @@ function showToast(msg) {
   }, 2000);
 }
 
-document.addEventListener("DOMContentLoaded", () => Cart.renderBadge());
+document.addEventListener("DOMContentLoaded", () => {
+  Cart.renderBadge();
+
+  // Reels — autoplay/pause self-hosted video as cards enter/leave view
+  var reelCards = document.querySelectorAll(".reel-card");
+  if (reelCards.length) {
+    var reelObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var video = entry.target.querySelector(".reel-video");
+        if (!video) return;
+        if (entry.isIntersecting) {
+          video.play().catch(function () {});
+        } else {
+          video.pause();
+        }
+      });
+    }, { threshold: 0.5 });
+    reelCards.forEach(function (card) { reelObserver.observe(card); });
+  }
+});
 
 // Splash — show once per browser session
 (function () {

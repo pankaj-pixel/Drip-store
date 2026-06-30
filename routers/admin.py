@@ -12,6 +12,7 @@ from itsdangerous import BadSignature, URLSafeSerializer
 
 from database.db import get_db
 from models.product import Product
+from models.reel import Reel
 
 load_dotenv()
 
@@ -388,6 +389,97 @@ async def admin_product_delete(request: Request, product_id: int):
             await db.execute("DELETE FROM products WHERE id = ?", (product_id,))
             await db.commit()
     return RedirectResponse("/admin/products", status_code=303)
+
+
+@router.get("/reels", response_class=HTMLResponse)
+async def admin_reels(request: Request):
+    if not _is_auth(request):
+        return RedirectResponse("/admin", status_code=302)
+    async with get_db() as db:
+        cursor = await db.execute(
+            """SELECT r.id, r.video, r.instagram_url, r.product_id, r.caption,
+                      r.created_at, p.name AS product_name
+               FROM reels r
+               LEFT JOIN products p ON p.id = r.product_id
+               ORDER BY r.id DESC"""
+        )
+        reel_rows = await cursor.fetchall()
+        prod_cursor = await db.execute(
+            "SELECT id, name FROM products ORDER BY name"
+        )
+        prod_rows = await prod_cursor.fetchall()
+    reels = [Reel(**dict(row)) for row in reel_rows]
+    products = [{"id": r["id"], "name": r["name"]} for r in prod_rows]
+    return templates.TemplateResponse(
+        "admin_reels.html",
+        {"request": request, "reels": reels, "products": products, "error": ""},
+    )
+
+
+@router.post("/reels/new")
+async def admin_reel_create(
+    request: Request,
+    instagram_url: str = Form(default=""),
+    product_id: str = Form(default=""),
+    caption: str = Form(default=""),
+    video_file: UploadFile | None = File(default=None),
+):
+    if not _is_auth(request):
+        return RedirectResponse("/admin", status_code=302)
+
+    video_fname, video_err = await _save_file(video_file, ALLOWED_VIDEO, MAX_VIDEO_BYTES)
+
+    async def _reels_form_ctx(err: str):
+        async with get_db() as db:
+            cursor = await db.execute(
+                """SELECT r.id, r.video, r.instagram_url, r.product_id, r.caption,
+                          r.created_at, p.name AS product_name
+                   FROM reels r
+                   LEFT JOIN products p ON p.id = r.product_id
+                   ORDER BY r.id DESC"""
+            )
+            reel_rows = await cursor.fetchall()
+            prod_cursor = await db.execute("SELECT id, name FROM products ORDER BY name")
+            prod_rows = await prod_cursor.fetchall()
+        return {
+            "reels": [Reel(**dict(r)) for r in reel_rows],
+            "products": [{"id": r["id"], "name": r["name"]} for r in prod_rows],
+            "error": err,
+        }
+
+    if video_err:
+        ctx = await _reels_form_ctx(video_err)
+        return templates.TemplateResponse("admin_reels.html",
+                                          {"request": request, **ctx}, status_code=422)
+    if not video_fname:
+        ctx = await _reels_form_ctx("A video file is required.")
+        return templates.TemplateResponse("admin_reels.html",
+                                          {"request": request, **ctx}, status_code=422)
+
+    pid = int(product_id) if product_id.strip().isdigit() else None
+    url = instagram_url.strip()
+    async with get_db() as db:
+        await db.execute(
+            """INSERT INTO reels (video, instagram_url, product_id, caption)
+               VALUES (?, ?, ?, ?)""",
+            (video_fname, url, pid, caption.strip()),
+        )
+        await db.commit()
+    return RedirectResponse("/admin/reels", status_code=303)
+
+
+@router.post("/reels/{reel_id}/delete")
+async def admin_reel_delete(request: Request, reel_id: int):
+    if not _is_auth(request):
+        return RedirectResponse("/admin", status_code=302)
+    async with get_db() as db:
+        cursor = await db.execute("SELECT video FROM reels WHERE id = ?", (reel_id,))
+        row = await cursor.fetchone()
+        if row and row["video"]:
+            (UPLOAD_DIR / row["video"]).unlink(missing_ok=True)
+        await db.execute("DELETE FROM reels WHERE id = ?", (reel_id,))
+        await db.commit()
+    return RedirectResponse("/admin/reels", status_code=303)
 
 
 @router.post("/products/{product_id}/toggle-stock")
