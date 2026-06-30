@@ -8,6 +8,8 @@ from models.product import Product
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
+SPORTSWEAR_CATEGORIES = ["jersey", "t-shirt", "shorts", "vest", "joggers", "lowers"]
+
 
 @router.get("/", response_class=HTMLResponse)
 async def home(request: Request, category: str | None = Query(default=None)):
@@ -34,6 +36,34 @@ async def home(request: Request, category: str | None = Query(default=None)):
             "request": request,
             "products": products_list,
             "categories": categories,
+            "active_category": active,
+        },
+    )
+
+
+@router.get("/sportswear", response_class=HTMLResponse)
+async def sportswear(request: Request, category: str | None = Query(default=None)):
+    active = category.lower().strip() if category else ""
+    placeholders = ",".join("?" * len(SPORTSWEAR_CATEGORIES))
+    async with get_db() as db:
+        if active and active in SPORTSWEAR_CATEGORIES:
+            cursor = await db.execute(
+                f"SELECT * FROM products WHERE in_stock = 1 AND category = ? ORDER BY id",
+                (active,),
+            )
+        else:
+            cursor = await db.execute(
+                f"SELECT * FROM products WHERE in_stock = 1 AND category IN ({placeholders}) ORDER BY id",
+                SPORTSWEAR_CATEGORIES,
+            )
+        rows = await cursor.fetchall()
+    products_list = [Product(**dict(row)) for row in rows]
+    return templates.TemplateResponse(
+        "sportswear.html",
+        {
+            "request": request,
+            "products": products_list,
+            "categories": SPORTSWEAR_CATEGORIES,
             "active_category": active,
         },
     )

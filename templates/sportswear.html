@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Sportswear — DRIP{% endblock %}
+
+{% block content %}
+<section class="sport-hero">
+  <a href="/" class="sport-hero__back" aria-label="Back to home">← Home</a>
+  <div class="sport-hero__inner">
+    <p class="sport-hero__eyebrow">Jerseys · Gym Wear · Co-ords</p>
+    <h1 class="sport-hero__headline">TRAIN<br>HARD.</h1>
+    <p class="sport-hero__sub">New drops. Built to move.</p>
+  </div>
+</section>
+
+<div class="chips">
+  <a href="/sportswear" class="chip {% if not active_category %}chip--active{% endif %}">All</a>
+  {% for cat in categories %}
+  <a href="/sportswear?category={{ cat }}"
+     class="chip {% if active_category == cat %}chip--active{% endif %}">{{ cat | title }}</a>
+  {% endfor %}
+</div>
+
+{% if products %}
+<div class="product-grid">
+  {% for product in products %}
+  <a href="/product/{{ product.id }}" class="card">
+    <div class="card__img-wrap">
+      <img
+        src="/static/uploads/{{ product.image }}"
+        alt="{{ product.name }}"
+        class="card__img"
+      >
+    </div>
+    <div class="card__body">
+      <p class="card__name">{{ product.name }}</p>
+      <p class="card__price">₹{{ (product.price / 100) | int }}</p>
+      <button class="btn btn--primary">Buy Now</button>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="sport-empty">
+  <p>Drops coming soon. Check back.</p>
+  <a href="/" class="btn btn--primary sport-empty__btn">Back to Store</a>
+</div>
+{% endif %}
+{% endblock %}

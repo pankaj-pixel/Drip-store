@@ -1130,3 +1130,183 @@ body {
   border-color: var(--lime);
   color: #0a0a0a;
 }
+
+/* ── Sportswear banner (home) ───────────────────────────── */
+.sport-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 20px -12px 0;
+  padding: 20px 20px;
+  background: linear-gradient(110deg, #FF4500 0%, #FF8C00 100%);
+  text-decoration: none;
+  color: #fff;
+  overflow: hidden;
+  position: relative;
+}
+
+.sport-banner::before {
+  content: '';
+  position: absolute;
+  right: -30px;
+  top: -30px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+}
+
+.sport-banner__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sport-banner__tag {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  background: rgba(255,255,255,0.22);
+  border-radius: 4px;
+  padding: 2px 7px;
+  align-self: flex-start;
+  text-transform: uppercase;
+}
+
+.sport-banner__headline {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.sport-banner__sub {
+  font-size: 0.72rem;
+  opacity: 0.85;
+  letter-spacing: 0.04em;
+}
+
+.sport-banner__cta {
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  background: rgba(255,255,255,0.18);
+  border: 1.5px solid rgba(255,255,255,0.45);
+  border-radius: 8px;
+  padding: 8px 14px;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .sport-banner {
+    margin-left: -20px;
+    margin-right: -20px;
+    border-radius: 0;
+    padding: 24px 32px;
+  }
+
+  .sport-banner__headline { font-size: 2rem; }
+}
+
+/* ── Sportswear page hero ───────────────────────────────── */
+.sport-hero {
+  position: relative;
+  margin: -12px -12px 24px;
+  background: linear-gradient(110deg, #FF4500 0%, #FF8C00 100%);
+  padding: 56px 24px 72px;
+  clip-path: polygon(0 0, 100% 0, 100% 84%, 0 100%);
+  overflow: hidden;
+}
+
+.sport-hero::before {
+  content: '';
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+}
+
+.sport-hero::after {
+  content: '';
+  position: absolute;
+  left: 40%;
+  bottom: -60px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+}
+
+.sport-hero__back {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+}
+
+.sport-hero__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
+}
+
+.sport-hero__eyebrow {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 10px;
+}
+
+.sport-hero__headline {
+  font-size: clamp(2.8rem, 13vw, 4.5rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: #fff;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.sport-hero__sub {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.8);
+  letter-spacing: 0.08em;
+}
+
+@media (min-width: 768px) {
+  .sport-hero {
+    margin: -20px -20px 24px;
+    padding: 80px 40px 96px;
+  }
+}
+
+/* ── Sportswear empty state ─────────────────────────────── */
+.sport-empty {
+  text-align: center;
+  padding: 60px 24px;
+}
+
+.sport-empty p {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.sport-empty__btn {
+  display: inline-block;
+  width: auto;
+  padding: 12px 28px;
+  text-decoration: none;
+  border-radius: 10px;
+}
