@@ -1818,3 +1818,190 @@ body {
   margin-left: 4px;
   vertical-align: middle;
 }
+
+/* ── Trust badges ────────────────────────────────────────── */
+.trust-badges {
+  margin: 20px -12px 0;
+  background: #ffffff;
+  padding: 22px 20px;
+  border-top: 1px solid #ebebeb;
+  border-bottom: 1px solid #ebebeb;
+}
+
+.trust-badges__inner {
+  display: flex;
+  gap: 8px;
+  justify-content: space-around;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.trust-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  flex: 1;
+}
+
+.trust-badge__icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.trust-badge__icon--check {
+  background: var(--lime);
+  border-radius: 50%;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #0a0a0a;
+}
+
+.trust-badge__text {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.35;
+}
+
+/* ── About shop ──────────────────────────────────────────── */
+.about-shop {
+  margin: 0 -12px;
+  background: #0d0d0d;
+  padding: 36px 24px;
+}
+
+.about-shop__label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--lime);
+  margin-bottom: 14px;
+}
+
+.about-shop__desc {
+  font-size: 0.88rem;
+  color: #cccccc;
+  line-height: 1.65;
+  margin-bottom: 18px;
+  max-width: 480px;
+}
+
+.about-shop__rating {
+  font-size: 0.9rem;
+  color: #ffffff;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.about-shop__rating-sub {
+  color: #666666;
+  font-weight: 400;
+}
+
+.about-shop__links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.about-shop__link {
+  font-size: 0.82rem;
+  color: #999999;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.about-shop__link:active,
+.about-shop__link:hover {
+  color: var(--lime);
+}
+
+.about-shop__hours {
+  font-size: 0.68rem;
+  color: #444444;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* ── Customer reviews ────────────────────────────────────── */
+.reviews {
+  padding: 28px 0 16px;
+}
+
+.reviews__label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+  padding: 0 12px;
+}
+
+.reviews__strip {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 4px 12px 12px;
+}
+
+.reviews__strip::-webkit-scrollbar { display: none; }
+
+.review-card {
+  flex-shrink: 0;
+  width: 256px;
+  scroll-snap-align: start;
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+}
+
+.review-card__text {
+  font-size: 0.85rem;
+  color: var(--text);
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+
+.review-card__stars {
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.review-card__author {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+@media (min-width: 768px) {
+  .trust-badges {
+    margin: 20px -20px 0;
+  }
+
+  .about-shop {
+    margin: 0 -20px;
+    padding: 40px 32px;
+  }
+
+  .reviews__label { padding: 0 20px; }
+
+  .reviews__strip { padding: 4px 20px 12px; }
+}
