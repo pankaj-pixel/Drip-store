@@ -31,21 +31,21 @@ body {
   justify-content: space-between;
   height: var(--nav-h);
   padding: 0 16px;
-  background: var(--surface);
-  border-bottom: 1px solid #e5e5e5;
+  background: #0a0a0a;
+  border-bottom: 1px solid #1a1a1a;
 }
 
 .nav__logo {
   font-size: 1.2rem;
   font-weight: 800;
   letter-spacing: 0.18em;
-  color: var(--text);
+  color: var(--lime);
   text-decoration: none;
 }
 
 .nav__cart {
   position: relative;
-  color: var(--text);
+  color: #ffffff;
   display: flex;
   align-items: center;
 }
@@ -1781,4 +1781,23 @@ body {
   text-decoration: none;
   border-radius: 10px;
   font-size: 0.85rem;
+}
+
+/* ── Category badge on cards ────────────────────────────── */
+.card__cat-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  background: rgba(0,0,0,0.55);
+  color: var(--lime);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  pointer-events: none;
 }

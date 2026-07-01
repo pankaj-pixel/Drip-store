@@ -69,7 +69,7 @@
       const sizeLabel = item.size ? `Size: ${item.size}` : "One size";
       return `
         <div class="cart-item">
-          <img class="cart-item__img" src="/static/uploads/${item.image}" alt="${item.name}" loading="lazy" decoding="async" onerror="this.style.visibility='hidden'">
+          ${item.image ? `<img class="cart-item__img" src="/static/uploads/${item.image}" alt="${item.name}" loading="lazy" decoding="async">` : `<div class="cart-item__img"></div>`}
           <div class="cart-item__info">
             <div class="cart-item__name">${item.name}</div>
             <div class="cart-item__size">${sizeLabel}</div>
