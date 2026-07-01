@@ -25,7 +25,7 @@
     <div class="ap-card__left">
       {% if p.images %}
       <img class="ap-card__thumb" src="/static/uploads/{{ p.images[0] }}" alt="{{ p.name }}"
-           onerror="this.style.visibility='hidden'">
+           loading="lazy" decoding="async" onerror="this.style.visibility='hidden'">
       {% else %}
       <div class="ap-card__thumb ap-card__thumb--empty"></div>
       {% endif %}

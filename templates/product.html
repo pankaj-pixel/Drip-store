@@ -17,7 +17,7 @@
     </a>
     {% for img in product.images %}
     <div class="gallery__slide">
-      <img src="/static/uploads/{{ img }}" alt="{{ product.name }} — photo {{ loop.index }}" class="gallery__img">
+      <img src="/static/uploads/{{ img }}" alt="{{ product.name }} — photo {{ loop.index }}" class="gallery__img" loading="{% if loop.first %}eager{% else %}lazy{% endif %}" decoding="async">
     </div>
     {% endfor %}
     {% if product.video %}

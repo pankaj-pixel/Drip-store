@@ -74,6 +74,8 @@
         src="/static/uploads/{{ product.images[0] }}"
         alt="{{ product.name }}"
         class="card__img"
+        loading="{% if loop.first %}eager{% else %}lazy{% endif %}"
+        decoding="async"
       >
     </div>
     <div class="card__body">
