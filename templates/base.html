@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}DRIP{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}DRIP — Men's clothing store in Delhi. Shop kurtas, jeans, shirts, jerseys and more. Free delivery across Delhi.{% endblock %}">
+  <meta name="keywords" content="{% block meta_keywords %}men's clothing delhi, kurta, jeans, jersey, free delivery delhi{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}DRIP — Men's Clothing Delhi{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Men's clothing store in Delhi. Free delivery across all of Delhi.{% endblock %}">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="alternate icon" href="/static/favicon.ico">
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
@@ -30,6 +37,8 @@
     <p>Free delivery · All Delhi</p>
     <p>Orders via WhatsApp</p>
   </footer>
+
+  <button class="back-to-top" id="back-to-top" aria-label="Back to top">↑</button>
 
   <script src="/static/js/main.js"></script>
   {% block scripts %}{% endblock %}

@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
 {% block title %}{{ product.name }} — DRIP{% endblock %}
+{% block og_title %}{{ product.name }} — DRIP{% endblock %}
+{% block og_description %}{% if product.description %}{{ product.description }}{% else %}Shop {{ product.name }} at DRIP. Free delivery across Delhi.{% endif %}{% endblock %}
 
 {% block content %}
 <div class="pd">

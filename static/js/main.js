@@ -81,6 +81,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// Back to top
+(function () {
+  var btn = document.getElementById("back-to-top");
+  if (!btn) return;
+  window.addEventListener("scroll", function () {
+    btn.classList.toggle("back-to-top--show", window.scrollY > 300);
+  }, { passive: true });
+  btn.addEventListener("click", function () {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}());
+
 // Splash — show once per browser session
 (function () {
   var splash = document.getElementById("splash");

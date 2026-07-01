@@ -86,4 +86,15 @@
   </a>
   {% endfor %}
 </div>
+
+{% if not products %}
+<div class="empty-state">
+  {% if active_category %}
+  <p class="empty-state__msg">No items in this category yet.</p>
+  <a href="/" class="btn btn--primary empty-state__btn">View all</a>
+  {% else %}
+  <p class="empty-state__msg">No products yet — check back soon.</p>
+  {% endif %}
+</div>
+{% endif %}
 {% endblock %}
