@@ -1,2 +1,0 @@
-Open VS Code → Start Claude Code → Name Session → 
-Plan → Build → Test → Commit → Update CLAUDE.md → Close

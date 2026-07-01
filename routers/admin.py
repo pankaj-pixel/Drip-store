@@ -1,7 +1,9 @@
 import io
 import json
 import os
+import time
 import uuid
+from collections import defaultdict
 from pathlib import Path
 from typing import List
 
@@ -19,13 +21,26 @@ from models.reel import Reel
 
 load_dotenv()
 
+
+def _require_env(name: str) -> str:
+    value = os.getenv(name)
+    if not value:
+        raise RuntimeError(f"Missing required env var: {name} — check your .env file")
+    return value
+
+
 router = APIRouter(prefix="/admin")
 templates = Jinja2Templates(directory="templates")
 
-ADMIN_PASS = os.getenv("ADMIN_PASS", "drip123")
-SECRET_KEY = os.getenv("SECRET_KEY", "change-me")
+ADMIN_PASS = _require_env("ADMIN_PASS")
+SECRET_KEY = _require_env("SECRET_KEY")
 _signer = URLSafeSerializer(SECRET_KEY, salt="admin-session")
 COOKIE = "drip_admin"
+
+# Rate limiting: max 5 failed attempts per IP per 15 minutes
+_RATE_LIMIT_MAX = 5
+_RATE_LIMIT_WINDOW = 15 * 60  # seconds
+_failed_attempts: dict[str, list[float]] = defaultdict(list)
 
 UPLOAD_DIR = Path("static/uploads")
 ALLOWED_IMAGES = {"image/jpeg", "image/png", "image/webp"}
@@ -106,14 +121,32 @@ async def admin_root(request: Request):
 
 @router.post("/login")
 async def admin_login(request: Request, password: str = Form(...)):
+    ip = request.client.host if request.client else "unknown"
+    now = time.time()
+
+    # Purge attempts outside the window
+    _failed_attempts[ip] = [t for t in _failed_attempts[ip] if now - t < _RATE_LIMIT_WINDOW]
+
+    if len(_failed_attempts[ip]) >= _RATE_LIMIT_MAX:
+        return templates.TemplateResponse(
+            "admin_login.html",
+            {"request": request, "error": "Too many failed attempts. Try again in 15 minutes."},
+            status_code=429,
+        )
+
     if password == ADMIN_PASS:
+        _failed_attempts.pop(ip, None)
         token = _signer.dumps({"auth": 1})
         response = RedirectResponse("/admin/orders", status_code=303)
         response.set_cookie(COOKIE, token, httponly=True, max_age=86400 * 7)
         return response
+
+    _failed_attempts[ip].append(now)
+    remaining = _RATE_LIMIT_MAX - len(_failed_attempts[ip])
+    error = "Wrong password." if remaining > 0 else "Too many failed attempts. Try again in 15 minutes."
     return templates.TemplateResponse(
         "admin_login.html",
-        {"request": request, "error": "Wrong password."},
+        {"request": request, "error": error},
         status_code=401,
     )
 
