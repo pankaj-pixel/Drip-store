@@ -3,6 +3,7 @@
 
 # Database
 drip.db
+backups/
 
 # Python bytecode
 __pycache__/

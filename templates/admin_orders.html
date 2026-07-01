@@ -7,56 +7,111 @@
   <div class="admin-header">
     <h1 class="admin-orders-title">Orders</h1>
     <div class="admin-header-actions">
+      <button class="admin-logout-btn" id="refresh-btn" onclick="refreshOrders()">&#8635; Refresh</button>
       <a href="/admin/products" class="admin-logout-btn">Products</a>
       <a href="/admin/reels" class="admin-logout-btn">Reels</a>
       <a href="/admin/logout" class="admin-logout-btn">Logout</a>
     </div>
   </div>
 
-  {% if not orders %}
-  <p class="admin-empty">No orders yet.</p>
-  {% endif %}
+  <div id="orders-list">
+    {% if not orders %}
+    <p class="admin-empty">No orders yet.</p>
+    {% endif %}
 
-  {% for o in orders %}
-  <div class="admin-card">
+    {% for o in orders %}
+    <div class="admin-card">
 
-    <div class="admin-card__top">
-      <span class="admin-card__id">#{{ o.id }}</span>
-      <span class="admin-status admin-status--{{ o.status }}">{{ o.status }}</span>
-      <span class="admin-card__time">{{ o.created_at }}</span>
+      <div class="admin-card__top">
+        <span class="admin-card__id">#{{ o.id }}</span>
+        <span class="admin-status admin-status--{{ o.status }}">{{ o.status }}</span>
+        <span class="admin-card__time">{{ o.created_at }}</span>
+      </div>
+
+      <div class="admin-card__customer">
+        <span class="admin-card__name">{{ o.customer_name }}</span>
+        <a class="admin-card__phone" href="tel:{{ o.phone }}">{{ o.phone }}</a>
+      </div>
+
+      <p class="admin-card__address">{{ o.address }}</p>
+
+      <ul class="admin-card__items">
+        {% for item in o.order_items %}
+        <li>
+          {{ item.name }}{% if item.size %} ({{ item.size }}){% endif %}
+          &times;{{ item.qty }}
+          &mdash; &#8377;{{ (item.price // 100) * item.qty }}
+        </li>
+        {% endfor %}
+      </ul>
+
+      <div class="admin-card__footer">
+        <span class="admin-card__total">&#8377;{{ o.total_inr | int }}</span>
+        <form method="post" action="/admin/orders/{{ o.id }}/status">
+          <button class="admin-status-btn" type="submit">
+            {% if o.status == "pending" %}Mark Confirmed
+            {% elif o.status == "confirmed" %}Mark Delivered
+            {% else %}Reset to Pending
+            {% endif %}
+          </button>
+        </form>
+      </div>
+
     </div>
-
-    <div class="admin-card__customer">
-      <span class="admin-card__name">{{ o.customer_name }}</span>
-      <a class="admin-card__phone" href="tel:{{ o.phone }}">{{ o.phone }}</a>
-    </div>
-
-    <p class="admin-card__address">{{ o.address }}</p>
-
-    <ul class="admin-card__items">
-      {% for item in o.order_items %}
-      <li>
-        {{ item.name }}{% if item.size %} ({{ item.size }}){% endif %}
-        &times;{{ item.qty }}
-        &mdash; &#8377;{{ (item.price // 100) * item.qty }}
-      </li>
-      {% endfor %}
-    </ul>
-
-    <div class="admin-card__footer">
-      <span class="admin-card__total">&#8377;{{ o.total_inr | int }}</span>
-      <form method="post" action="/admin/orders/{{ o.id }}/status">
-        <button class="admin-status-btn" type="submit">
-          {% if o.status == "pending" %}Mark Confirmed
-          {% elif o.status == "confirmed" %}Mark Delivered
-          {% else %}Reset to Pending
-          {% endif %}
-        </button>
-      </form>
-    </div>
-
+    {% endfor %}
   </div>
-  {% endfor %}
 
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  var _lastTotal = {{ orders | length }};
+  var _lastPending = {{ pending }};
+
+  function playBeep() {
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.3);
+    } catch (e) {}
+  }
+
+  function refreshOrders() {
+    var btn = document.getElementById("refresh-btn");
+    if (btn) { btn.disabled = true; btn.textContent = "Loading…"; }
+    fetch("/admin/orders/fragment")
+      .then(function(r) { return r.text(); })
+      .then(function(html) {
+        document.getElementById("orders-list").innerHTML = html;
+      })
+      .catch(function() {})
+      .finally(function() {
+        if (btn) { btn.disabled = false; btn.innerHTML = "&#8635; Refresh"; }
+      });
+  }
+
+  setInterval(function() {
+    fetch("/admin/orders/count")
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.total > _lastTotal) {
+          refreshOrders();
+          playBeep();
+          document.title = "🔔 New Order! — DRIP Admin";
+          setTimeout(function() { document.title = "Orders · DRIP Admin"; }, 10000);
+        }
+        _lastTotal = data.total;
+        _lastPending = data.pending;
+      })
+      .catch(function() {});
+  }, 15000);
+</script>
 {% endblock %}

@@ -11,7 +11,7 @@ from PIL import Image
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, File, Form, Request, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from itsdangerous import BadSignature, URLSafeSerializer
 
@@ -110,6 +110,15 @@ async def _get_categories() -> list:
         return [row[0] for row in await cursor.fetchall()]
 
 
+async def _pending_count() -> int:
+    async with get_db() as db:
+        cursor = await db.execute(
+            "SELECT COUNT(*) FROM orders WHERE status = 'pending'"
+        )
+        row = await cursor.fetchone()
+        return row[0] if row else 0
+
+
 # ── Auth / login ──────────────────────────────────────────
 
 @router.get("", response_class=HTMLResponse)
@@ -174,8 +183,9 @@ async def admin_orders(request: Request):
         o["total_inr"] = o["total"] // 100
         o.setdefault("status", "pending")
         orders.append(o)
+    pending = await _pending_count()
     return templates.TemplateResponse(
-        "admin_orders.html", {"request": request, "orders": orders}
+        "admin_orders.html", {"request": request, "orders": orders, "pending": pending}
     )
 
 
@@ -197,6 +207,39 @@ async def toggle_status(request: Request, order_id: int):
     return RedirectResponse("/admin/orders", status_code=303)
 
 
+@router.get("/orders/count")
+async def orders_count(request: Request):
+    if not _is_auth(request):
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    async with get_db() as db:
+        async with db.execute("SELECT COUNT(*) FROM orders") as cursor:
+            total = (await cursor.fetchone())[0]
+        async with db.execute(
+            "SELECT COUNT(*) FROM orders WHERE status = 'pending'"
+        ) as cursor:
+            pending = (await cursor.fetchone())[0]
+    return JSONResponse({"total": total, "pending": pending})
+
+
+@router.get("/orders/fragment", response_class=HTMLResponse)
+async def orders_fragment(request: Request):
+    if not _is_auth(request):
+        return HTMLResponse("", status_code=401)
+    async with get_db() as db:
+        async with db.execute("SELECT * FROM orders ORDER BY id DESC") as cursor:
+            rows = await cursor.fetchall()
+    orders = []
+    for row in rows:
+        o = dict(row)
+        o["order_items"] = json.loads(o["items"])
+        o["total_inr"] = o["total"] // 100
+        o.setdefault("status", "pending")
+        orders.append(o)
+    return templates.TemplateResponse(
+        "admin_orders_fragment.html", {"request": request, "orders": orders}
+    )
+
+
 # ── Products list ─────────────────────────────────────────
 
 @router.get("/products", response_class=HTMLResponse)
@@ -207,8 +250,9 @@ async def admin_products(request: Request):
         cursor = await db.execute("SELECT * FROM products ORDER BY id DESC")
         rows = await cursor.fetchall()
     products = [Product(**dict(row)) for row in rows]
+    pending = await _pending_count()
     return templates.TemplateResponse(
-        "admin_products.html", {"request": request, "products": products}
+        "admin_products.html", {"request": request, "products": products, "pending": pending}
     )
 
 
@@ -463,9 +507,10 @@ async def admin_reels(request: Request):
         prod_rows = await prod_cursor.fetchall()
     reels = [Reel(**dict(row)) for row in reel_rows]
     products = [{"id": r["id"], "name": r["name"]} for r in prod_rows]
+    pending = await _pending_count()
     return templates.TemplateResponse(
         "admin_reels.html",
-        {"request": request, "reels": reels, "products": products, "error": ""},
+        {"request": request, "reels": reels, "products": products, "error": "", "pending": pending},
     )
 
 

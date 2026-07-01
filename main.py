@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from database.backup import backup_db
 from database.db import init_db
 from routers import admin, cart, orders, products
 
@@ -26,6 +27,7 @@ class CacheControlMiddleware(BaseHTTPMiddleware):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    backup_db()
     yield
 
 

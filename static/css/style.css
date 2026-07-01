@@ -1801,3 +1801,20 @@ body {
   -webkit-backdrop-filter: blur(4px);
   pointer-events: none;
 }
+
+/* ── Admin pending badge ─────────────────────────────────── */
+.admin-pending-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: #e53935;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0 4px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
