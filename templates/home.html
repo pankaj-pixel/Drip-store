@@ -5,6 +5,40 @@
 {% block content %}
 {% include "splash.html" %}
 
+<div class="search-bar">
+  <form class="search-form" action="/" method="get">
+    {% if active_category %}
+    <input type="hidden" name="category" value="{{ active_category }}">
+    {% endif %}
+    <input
+      class="search-input"
+      type="search"
+      name="search"
+      placeholder="Search products…"
+      value="{{ search }}"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+    >
+    {% if search %}
+    <a href="/" class="search-clear" aria-label="Clear search">×</a>
+    {% endif %}
+    <button class="search-submit" type="submit" aria-label="Search">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </button>
+  </form>
+  {% if search %}
+  <p class="search-results-count">
+    {{ products | length }} result{% if products | length != 1 %}s{% endif %} for '<strong>{{ search }}</strong>'
+  </p>
+  {% endif %}
+</div>
+
 <section class="hero">
   <div class="hero__inner">
     <h1 class="hero__headline">FRESH FITS.<br><span class="hero__accent">ZERO DELIVERY FEE.</span></h1>

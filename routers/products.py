@@ -13,17 +13,34 @@ SPORTSWEAR_CATEGORIES = ["jersey", "t-shirt", "shorts", "vest", "joggers", "lowe
 
 
 @router.get("/", response_class=HTMLResponse)
-async def home(request: Request, category: str | None = Query(default=None)):
+async def home(
+    request: Request,
+    category: str | None = Query(default=None),
+    search: str | None = Query(default=None),
+):
     active = category.lower().strip() if category else ""
+    term = search.strip() if search and search.strip() else ""
     async with get_db() as db:
         cat_cursor = await db.execute(
             "SELECT DISTINCT category FROM products WHERE in_stock = 1 ORDER BY category"
         )
         cat_rows = await cat_cursor.fetchall()
 
-        if active:
+        if active and term:
+            prod_cursor = await db.execute(
+                "SELECT * FROM products WHERE in_stock = 1 AND category = ?"
+                " AND (name LIKE ? OR description LIKE ?)",
+                (active, f"%{term}%", f"%{term}%"),
+            )
+        elif active:
             prod_cursor = await db.execute(
                 "SELECT * FROM products WHERE in_stock = 1 AND category = ?", (active,)
+            )
+        elif term:
+            prod_cursor = await db.execute(
+                "SELECT * FROM products WHERE in_stock = 1"
+                " AND (name LIKE ? OR description LIKE ?)",
+                (f"%{term}%", f"%{term}%"),
             )
         else:
             prod_cursor = await db.execute("SELECT * FROM products WHERE in_stock = 1")
@@ -49,6 +66,7 @@ async def home(request: Request, category: str | None = Query(default=None)):
             "categories": categories,
             "active_category": active,
             "reels": reels,
+            "search": term,
         },
     )
 
@@ -86,9 +104,27 @@ async def product_detail(request: Request, product_id: int):
     async with get_db() as db:
         cursor = await db.execute("SELECT * FROM products WHERE id = ?", (product_id,))
         row = await cursor.fetchone()
-    if not row:
-        raise HTTPException(status_code=404, detail="Product not found")
-    product = Product(**dict(row))
+        if not row:
+            raise HTTPException(status_code=404, detail="Product not found")
+        product = Product(**dict(row))
+
+        rel_cursor = await db.execute(
+            "SELECT * FROM products WHERE in_stock = 1 AND category = ? AND id != ?"
+            " ORDER BY RANDOM() LIMIT 3",
+            (product.category, product_id),
+        )
+        related = [Product(**dict(r)) for r in await rel_cursor.fetchall()]
+
+        if len(related) < 3:
+            exclude = [product_id] + [r.id for r in related]
+            ph = ",".join("?" * len(exclude))
+            fill_cursor = await db.execute(
+                f"SELECT * FROM products WHERE in_stock = 1 AND id NOT IN ({ph})"
+                " ORDER BY RANDOM() LIMIT ?",
+                (*exclude, 3 - len(related)),
+            )
+            related += [Product(**dict(r)) for r in await fill_cursor.fetchall()]
+
     return templates.TemplateResponse(
-        "product.html", {"request": request, "product": product}
+        "product.html", {"request": request, "product": product, "related": related}
     )

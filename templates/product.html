@@ -127,6 +127,33 @@
   </div>
 </div>
 
+{% if related %}
+<section class="related">
+  <p class="related__label">You Might Also Like</p>
+  <div class="related__strip">
+    {% for p in related %}
+    <a href="/product/{{ p.id }}" class="card related__card">
+      <div class="card__img-wrap">
+        <img
+          src="/static/uploads/{{ p.images[0] }}"
+          alt="{{ p.name }}"
+          class="card__img"
+          loading="lazy"
+          decoding="async"
+        >
+        <span class="card__cat-badge">{{ p.category | upper }}</span>
+      </div>
+      <div class="card__body">
+        <p class="card__name">{{ p.name }}</p>
+        <p class="card__price">₹{{ (p.price / 100) | int }}</p>
+        <button class="btn btn--primary">Buy Now</button>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
 <script>
   // Gallery
   const gallery = document.getElementById("gallery");
